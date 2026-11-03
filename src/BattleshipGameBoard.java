@@ -40,8 +40,6 @@ public class BattleshipGameBoard extends JPanel
                 add(button);
             }
         }
-
-        placeShips();
     }
 
     private void handleButtonClick(BattleshipBoardTile button)
