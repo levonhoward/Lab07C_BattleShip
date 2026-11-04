@@ -12,12 +12,14 @@ public class BattleshipGameBoard extends JPanel
 
     BattleshipBoardTile[][] board;
     BattleshipGameLogic game;
+    BattleshipGUI gui;
 
-    BattleshipGameBoard(BattleshipGameLogic game) throws IOException, FontFormatException
+    BattleshipGameBoard(BattleshipGameLogic game, BattleshipGUI gui) throws IOException, FontFormatException
     {
         super();
-        this.game = game;
         board = new BattleshipBoardTile[ROWS][COLS];
+        this.game = game;
+        this.gui = gui;
 
         // Aesthetics
         File boardFontFile = new File("src/fonts/KiwiSoda.ttf");
@@ -53,30 +55,68 @@ public class BattleshipGameBoard extends JPanel
         }
         else
         {
-            // BUTTON LOGIC HERE //
+            String result = game.fire(row, col);
+            refreshBoard();
+            gui.updateStatusPanel();
+            resultResponse(result);
         }
     }
 
-    public void printBoard()
+    private void refreshBoard()
     {
-        for (int i = 0; i < ROWS; i++)
-        {
-            for (int j = 0; j < COLS; j++)
-            {
-                System.out.print(board[i][j] + " ");
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                String status = game.getCell(i, j);
+                BattleshipBoardTile tile = board[i][j];
+
+                tile.setText(status);
+
+                if (status.equals("M"))
+                {
+                    tile.setForeground(Color.decode("#fff000"));
+                }
+                else if (status.equals("X"))
+                {
+                    tile.setForeground(Color.decode("#ff0000"));
+                }
+                else
+                {
+                    tile.setForeground(Color.decode("#0000ff"));
+                }
             }
-            System.out.print("\n");
         }
     }
 
-    private void clearBoard()
+    private void resultResponse(String status)
     {
-        for (int i = 0; i < ROWS; i++)
+        int playAgainChoice = -2;
+
+        if (status.equals("sunk"))
         {
-            for (int j = 0; j < COLS; j++)
-            {
-                board[i][j].setText(" ");
-            }
+            JOptionPane.showMessageDialog(this, "You sunk a ship!", "Sunk!", JOptionPane.INFORMATION_MESSAGE);
+        }
+        else if (status.equals("strike"))
+        {
+            JOptionPane.showMessageDialog(this, "You missed again! That's a strike!", "Strike!", JOptionPane.INFORMATION_MESSAGE);
+        }
+        else if (status.equals("win"))
+        {
+            playAgainChoice = JOptionPane.showConfirmDialog(this, "You won! Play again?", "Winner!", JOptionPane.YES_NO_OPTION);
+        }
+        else if (status.equals("lose"))
+        {
+            playAgainChoice = JOptionPane.showConfirmDialog(this, "You lost! Play again?", "Game Over!", JOptionPane.YES_NO_OPTION);
+        }
+
+        if (playAgainChoice == JOptionPane.YES_OPTION)
+        {
+            game.resetGame();
+            gui.updateStatusPanel();
+            refreshBoard();
+        }
+        else if (playAgainChoice == JOptionPane.NO_OPTION || playAgainChoice == JOptionPane.CLOSED_OPTION)
+        {
+            System.exit(0);
         }
     }
 }

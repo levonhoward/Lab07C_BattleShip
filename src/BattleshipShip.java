@@ -23,20 +23,4 @@ public class BattleshipShip
     {
         return (length <= hits);
     }
-
-    public boolean occupies(int row, int col)
-    {
-        boolean doesOccupy = false;
-
-        int[] target = {row, col};
-        for (int[] tile : tiles)
-        {
-            if (Arrays.equals(target, tile))
-            {
-                doesOccupy = true;
-            }
-        }
-
-        return doesOccupy;
-    }
 }

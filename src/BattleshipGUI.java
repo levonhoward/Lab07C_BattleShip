@@ -37,7 +37,7 @@ public class BattleshipGUI extends JFrame
 
         // Board
         game = new BattleshipGameLogic();
-        boardPnl = new BattleshipGameBoard(game);
+        boardPnl = new BattleshipGameBoard(game, this);
         mainPnl.add(boardPnl);
 
         // Status
@@ -102,6 +102,14 @@ public class BattleshipGUI extends JFrame
             status.setForeground(Color.decode("#0000ff"));
             statusPnl.add(status);
         }
+    }
+
+    public void updateStatusPanel()
+    {
+        missNumberLbl.setText("" + game.getMiss());
+        strikeNumberLbl.setText("" + game.getStrike());
+        totalMissNumberLbl.setText("" + game.getTotalMiss());
+        totalHitNumberLbl.setText("" + game.getTotalHit());
     }
 
     private void buildQuitPanel() throws IOException, FontFormatException

@@ -1,3 +1,5 @@
+import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -6,22 +8,28 @@ public class BattleshipGameLogic
     final int ROWS = 10;
     final int COLS = 10;
     final int[] SHIP_LENGTHS = {5, 4, 3, 3, 2};
+    final int TOTAL_SHIP_LENGTHS = 17;
 
     final String BLANK = " ";
     final String MISS = "M";
     final String HIT = "X";
+
+    final String RESULT_MISS = "miss";
+    final String RESULT_HIT = "hit";
+    final String RESULT_SUNK = "sunk";
+    final String RESULT_STRIKE = "strike";
+    final String RESULT_WIN = "win";
+    final String RESULT_LOSE = "lose";
 
     Random rnd;
 
     int miss, strike, totalMiss, totalHit;
 
     String[][] playerBoard;
-
-    ArrayList<BattleshipShip> ships;
     BattleshipShip[][] shipBoard;
+    ArrayList<BattleshipShip> ships;
 
-    public BattleshipGameLogic()
-    {
+    public BattleshipGameLogic() throws IOException, FontFormatException {
         playerBoard = new String[ROWS][COLS];
         rnd = new Random();
         ships = new ArrayList<>();
@@ -75,6 +83,7 @@ public class BattleshipGameLogic
 
                 if (canPlaceShip(row, col, shipLength, isHorizontal))
                 {
+                    // Store array of coordinates for the ship
                     ArrayList<int[]> tiles = new ArrayList<>();
                     for (int i = 0; i < shipLength; i++)
                     {
@@ -88,9 +97,11 @@ public class BattleshipGameLogic
                         }
                     }
 
+                    // Build ship and add it to the array
                     BattleshipShip ship = new BattleshipShip(tiles);
                     ships.add(ship);
 
+                    // Place each tile of the ship on the secret board
                     for (int[] tile : tiles)
                     {
                         shipBoard[tile[0]][tile[1]] = ship;
@@ -115,18 +126,20 @@ public class BattleshipGameLogic
     {
         boolean canPlaceShip = true;
 
-        if (isHorizontal && (col + length) <= ROWS)
+        if (isHorizontal && (col + length) <= COLS)
         {
-            for (int i = col; i < length; i++) {
+            for (int i = col; i < (col + length); i++)
+            {
                 if (shipBoard[row][i] != null)
                 {
                     canPlaceShip = false;
                 }
             }
         }
-        else if (!isHorizontal && (row + length) <= COLS)
+        else if (!isHorizontal && (row + length) <= ROWS)
         {
-            for (int i = row; i < length; i++) {
+            for (int i = row; i < (row + length); i++)
+            {
                 if (shipBoard[i][col] != null)
                 {
                     canPlaceShip = false;
@@ -141,8 +154,74 @@ public class BattleshipGameLogic
         return canPlaceShip;
     }
 
+    /**
+     * Returns the results of fire attempt
+     * @param row - row on the board to target
+     * @param col - column on the board to target
+     * @return the result of the move
+     */
+    public String fire (int row, int col)
+    {
+        String result;
+
+        if (shipBoard[row][col] != null)
+        {
+            result = RESULT_HIT;
+            totalHit++;
+            miss = 0;
+
+            playerBoard[row][col] = HIT;
+
+            shipBoard[row][col].hitShip();
+            if (shipBoard[row][col].isSunk())
+            {
+                result = RESULT_SUNK;
+
+                if (totalHit >= TOTAL_SHIP_LENGTHS)
+                {
+                    result = RESULT_WIN;
+                }
+            }
+        }
+        else
+        {
+            result = RESULT_MISS;
+            totalMiss++;
+            miss++;
+
+            playerBoard[row][col] = MISS;
+
+            if (miss >= 5)
+            {
+                result = RESULT_STRIKE;
+                miss = 0;
+                strike++;
+
+                if (strike >= 3)
+                {
+                    result = RESULT_LOSE;
+                }
+            }
+        }
+
+        return result;
+    }
+
     public String getCell(int row, int col)
     {
         return playerBoard[row][col];
     }
+
+    public boolean isEmpty(int row, int col)
+    {
+        return playerBoard[row][col].equals(BLANK);
+    }
+
+    public int getTotalMiss() {return totalMiss;}
+
+    public int getTotalHit() {return totalHit;}
+
+    public int getMiss() {return miss;}
+
+    public int getStrike() {return strike;}
 }
